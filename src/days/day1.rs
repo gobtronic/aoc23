@@ -8,9 +8,9 @@ pub fn part1(input: Vec<String>) -> i64 {
 
 pub fn part2(input: Vec<String>) -> i64 {
     let literals = [
-        "zero", "one", "two", "three", "four", "five", "six", "seven", "eight", "nine",
+        "one", "two", "three", "four", "five", "six", "seven", "eight", "nine",
     ];
-    let nums: [String; 10] = core::array::from_fn(|i| format!("{}", i));
+    let nums: [String; 9] = core::array::from_fn(|i| format!("{}", i + 1));
 
     input
         .iter()
@@ -30,25 +30,14 @@ pub fn part2(input: Vec<String>) -> i64 {
                 );
             });
 
-            let mut matches = transformed.matches(char::is_numeric).collect::<Vec<&str>>();
-            match matches.len() {
-                3.. => {
-                    matches.reverse();
-                    matches.rotate_right(1);
-                    matches.truncate(2);
-                }
-                1 => {
-                    matches.push(matches.first().unwrap());
-                }
-                0 => matches.push("0"),
-                _ => {}
-            }
-            matches.join("").parse::<i64>().unwrap()
+            let numbers = extract_numbers(&transformed);
+            println!("Mutated {:?}\n", numbers);
+            numbers.join("").parse::<i64>().unwrap()
         })
         .sum()
 }
 
-fn extract_numbers<'a>(line: &'a str) -> Vec<&'a str> {
+fn extract_numbers(line: &str) -> Vec<&str> {
     let mut matches = line.matches(char::is_numeric).collect::<Vec<&str>>();
     match matches.len() {
         3.. => {
