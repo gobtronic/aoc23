@@ -1,16 +1,21 @@
 pub fn part1(input: Vec<String>) -> i64 {
     let matrix = matrix(input);
     let mut numbers: Vec<Number> = vec![];
-    for c_line in matrix.iter().enumerate() {
-        let mut number = Number::new(c_line.0);
-        let mut iter = c_line.1.iter().enumerate().peekable();
-        while let Some(c_enum) = iter.peek() {
-            if c_enum.1.is_numeric() {
-                number.chars_indices.push(*c_enum);
+    for line in matrix.iter().enumerate() {
+        let mut number = Number::new(line.0);
+        let mut iter = line.1.iter().enumerate().peekable();
+        while let Some(chars) = iter.peek() {
+            if chars.1.is_numeric() {
+                number.chars_indices.push(*chars);
+                if chars.0 == line.1.len() - 1 {
+                    numbers.push(number);
+                    number = Number::new(line.0);
+                }
             } else if !number.chars_indices.is_empty() {
                 numbers.push(number);
-                number = Number::new(c_line.0);
+                number = Number::new(line.0);
             }
+
             iter.next();
         }
     }
@@ -60,11 +65,7 @@ fn touches_symbol(num: &Number, matrix: &Vec<Vec<char>>) -> bool {
     let matrix_h = matrix.len();
 
     let start = num.chars_indices.first().unwrap().0;
-    let end = if num.chars_indices.len() == 1 {
-        start + 1
-    } else {
-        num.chars_indices.last().unwrap().0
-    };
+    let end = num.chars_indices.last().unwrap().0;
 
     let bounds: (usize, usize, usize, usize) = (
         // Top
@@ -108,18 +109,20 @@ fn parts_of_engine(nums: Vec<Number>, matrix: &Vec<Vec<char>>) -> Vec<i64> {
 #[test]
 fn part1_example() {
     let res = part1(aoc23::parse_lines(
-        r#"467..114..
-...*......
-..35..633.
-......#...
-617*......
-.....+.58.
-..592.....
-......755.
-...$.*....
-.664.598.."#,
+        r#"12.......*..
++.........34
+.......-12..
+..78........
+..*....60...
+78.........9
+.5.....23..$
+8...90*12...
+............
+2.2......12.
+.*.........*
+1.1..503+.56"#,
     ));
-    assert_eq!(res, 4361);
+    assert_eq!(res, 925);
 }
 
 #[test]
