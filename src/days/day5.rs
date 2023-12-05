@@ -2,18 +2,19 @@ use std::iter::Peekable;
 use std::slice::Iter;
 
 pub fn part1(input: Vec<String>) -> i64 {
-    let (seeds, maps) = extract(&input);
+    let seeds = extracts_all_seeds(&input);
+    let map_groups = extract_map_groups(&input);
     let mut seed_locations: Vec<(i64, i64)> = vec![];
     seeds.into_iter().for_each(|seed| {
-        seed_locations.push((seed, browse(seed, maps.iter().peekable())));
+        seed_locations.push((seed, browse(seed, map_groups.iter().peekable())));
     });
     seed_locations.sort_by(|a, b| a.1.cmp(&b.1));
     seed_locations.first().unwrap().1
 }
 
-fn browse(source: i64, mut maps: Peekable<Iter<'_, Vec<Map>>>) -> i64 {
-    let map_group = maps.next().unwrap();
-    let destination = if let Some(map) = map_group
+fn browse(source: i64, mut map_groups: Peekable<Iter<'_, Vec<Map>>>) -> i64 {
+    let maps = map_groups.next().unwrap();
+    let destination = if let Some(map) = maps
         .iter()
         .find(|map| (map.source..map.source + map.length).contains(&source))
     {
@@ -22,8 +23,8 @@ fn browse(source: i64, mut maps: Peekable<Iter<'_, Vec<Map>>>) -> i64 {
         source
     };
 
-    if maps.peek().is_some() {
-        return browse(destination, maps);
+    if map_groups.peek().is_some() {
+        return browse(destination, map_groups);
     }
 
     destination
@@ -59,15 +60,17 @@ impl From<&str> for Map {
     }
 }
 
-fn extract(input: &[String]) -> (Seeds, Vec<Vec<Map>>) {
+fn extracts_all_seeds(input: &[String]) -> Seeds {
     let seed_line = input.first().unwrap();
-    let seeds: Seeds = seed_line
+    seed_line
         .replace("seeds: ", "")
         .split(' ')
         .map(|s| s.parse().unwrap())
-        .collect();
+        .collect()
+}
 
-    let maps: Vec<Vec<Map>> = input
+fn extract_map_groups(input: &[String]) -> Vec<Vec<Map>> {
+    input
         .iter()
         .skip(2)
         .map(|l| l.as_str())
@@ -76,9 +79,7 @@ fn extract(input: &[String]) -> (Seeds, Vec<Vec<Map>>) {
         .split("\n\n")
         .map(|map| map.split('\n').collect::<Vec<&str>>())
         .map(|raw| Map::extract(raw))
-        .collect();
-
-    (seeds, maps)
+        .collect()
 }
 
 #[test]
@@ -158,5 +159,5 @@ humidity-to-location map:
 60 56 37
 56 93 4"#,
     ));
-    assert_eq!(res, 0)
+    assert_eq!(res, 46)
 }
