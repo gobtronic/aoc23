@@ -21,8 +21,8 @@ fn main() {
         }
         _ => {
             let fns = days_fns.get(cli.day - 1).unwrap();
-            println!("{}", fns.0(aoc23::parse_input(cli.day, 1)));
-            println!("{}", fns.1(aoc23::parse_input(cli.day, 2)));
+            println!("{}", fns.0(aoc23::parse_input(cli.day)));
+            println!("{}", fns.1(aoc23::parse_input(cli.day)));
         }
     }
 }
