@@ -1,5 +1,3 @@
-use core::num;
-
 pub fn part1(input: Vec<String>) -> i64 {
     let matrix = matrix(input);
     let numbers = numbers(&matrix);
