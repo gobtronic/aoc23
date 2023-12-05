@@ -15,4 +15,4 @@ Cargo.lock
 
 # VSCode
 .vscode
-inputs/
+inputs/*
