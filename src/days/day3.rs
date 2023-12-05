@@ -1,5 +1,32 @@
+use core::num;
+
 pub fn part1(input: Vec<String>) -> i64 {
     let matrix = matrix(input);
+    let numbers = numbers(&matrix);
+    parts_of_engine(numbers, &matrix).iter().sum()
+}
+
+fn parts_of_engine(nums: Vec<Number>, matrix: &Vec<Vec<char>>) -> Vec<i64> {
+    nums.iter()
+        .filter(|n| touches_symbol(n, matrix))
+        .map(|n| n.into())
+        .collect()
+}
+
+pub fn part2(input: Vec<String>) -> i64 {
+    let matrix = matrix(input);
+    let numbers = numbers(&matrix);
+    0
+}
+
+fn matrix(input: Vec<String>) -> Vec<Vec<char>> {
+    input
+        .iter()
+        .map(|line| line.chars().collect::<Vec<char>>())
+        .collect()
+}
+
+fn numbers<'a>(matrix: &'a Vec<Vec<char>>) -> Vec<Number<'a>> {
     let mut numbers: Vec<Number> = vec![];
     for line in matrix.iter().enumerate() {
         let mut number = Number::new(line.0);
@@ -19,18 +46,7 @@ pub fn part1(input: Vec<String>) -> i64 {
             iter.next();
         }
     }
-
-    parts_of_engine(numbers, &matrix).iter().sum()
-}
-pub fn part2(input: Vec<String>) -> i64 {
-    0
-}
-
-fn matrix(input: Vec<String>) -> Vec<Vec<char>> {
-    input
-        .iter()
-        .map(|line| line.chars().collect::<Vec<char>>())
-        .collect()
+    numbers
 }
 
 struct Number<'a> {
@@ -99,13 +115,6 @@ fn is_symbol(c: char) -> bool {
     !c.is_numeric() && c != '.'
 }
 
-fn parts_of_engine(nums: Vec<Number>, matrix: &Vec<Vec<char>>) -> Vec<i64> {
-    nums.iter()
-        .filter(|n| touches_symbol(n, matrix))
-        .map(|n| n.into())
-        .collect()
-}
-
 #[test]
 fn part1_example() {
     let res = part1(aoc23::parse_lines(
@@ -126,4 +135,18 @@ fn part1_example() {
 }
 
 #[test]
-fn part2_example() {}
+fn part2_example() {
+    let res = part2(aoc23::parse_lines(
+        r#"467..114..
+...*......
+..35..633.
+......#...
+617*......
+.....+.58.
+..592.....
+......755.
+...$.*....
+.664.598.."#,
+    ));
+    assert_eq!(res, 467835);
+}
