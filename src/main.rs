@@ -12,7 +12,7 @@ struct Cli {
 
 fn main() {
     let cli = Cli::parse();
-    let days_fns = days_fns![day1];
+    let days_fns = days_fns![day1, day2];
 
     match days_fns.len().cmp(&cli.day) {
         std::cmp::Ordering::Less => {
