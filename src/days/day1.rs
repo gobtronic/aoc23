@@ -1,8 +1,11 @@
 pub fn part1(input: Vec<String>) -> i64 {
     input
         .iter()
-        .map(|line| extract_numbers(line))
-        .map(|numbers| numbers.join("").parse::<i64>().unwrap())
+        .map(|line| {
+            let mut matches = line.matches(char::is_numeric).collect::<Vec<&str>>();
+            let digits = sanitize_digits(&mut matches);
+            digits.join("").parse::<i64>().unwrap()
+        })
         .sum()
 }
 
@@ -14,31 +17,33 @@ pub fn part2(input: Vec<String>) -> i64 {
 
     input
         .iter()
-        .inspect(|line| println!("Mutating {}", line))
         .map(|line| {
-            let mut transformed = line.clone();
             let mut matches: Vec<_> = vec![];
             literals
                 .iter()
                 .for_each(|lit| matches.append(&mut line.match_indices(lit).collect()));
+            matches.append(&mut line.match_indices(char::is_numeric).collect());
             matches.sort();
+
+            let mut digits: Vec<&str> = vec![];
             matches.iter().for_each(|m| {
-                transformed = transformed.replace(
-                    m.1,
-                    nums.get(literals.iter().enumerate().find(|n| *n.1 == m.1).unwrap().0)
-                        .unwrap(),
-                );
+                if m.1.len() == 1 {
+                    digits.push(m.1);
+                } else {
+                    digits.push(
+                        nums.get(literals.iter().enumerate().find(|n| *n.1 == m.1).unwrap().0)
+                            .unwrap(),
+                    );
+                }
             });
 
-            let numbers = extract_numbers(&transformed);
-            println!("Mutated {:?}\n", numbers);
-            numbers.join("").parse::<i64>().unwrap()
+            let digits = sanitize_digits(&mut digits);
+            digits.join("").parse::<i64>().unwrap()
         })
         .sum()
 }
 
-fn extract_numbers(line: &str) -> Vec<&str> {
-    let mut matches = line.matches(char::is_numeric).collect::<Vec<&str>>();
+fn sanitize_digits<'a>(matches: &'a mut Vec<&'a str>) -> &'a mut Vec<&'a str> {
     match matches.len() {
         3.. => {
             matches.reverse();
