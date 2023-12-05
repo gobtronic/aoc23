@@ -14,7 +14,19 @@ fn parts_of_engine(nums: Vec<Number>, matrix: &Vec<Vec<char>>) -> Vec<i64> {
 pub fn part2(input: Vec<String>) -> i64 {
     let matrix = matrix(input);
     let numbers = numbers(&matrix);
-    0
+    let mut gears: Vec<(usize, usize)> = vec![];
+    matrix.iter().enumerate().for_each(|line| {
+        gears.append(
+            &mut line
+                .1
+                .iter()
+                .enumerate()
+                .filter(|c| *c.1 == '*')
+                .map(|g| (line.0, g.0))
+                .collect(),
+        )
+    });
+    gears.iter().map(|g| gear_factor(g, &numbers)).sum()
 }
 
 fn matrix(input: Vec<String>) -> Vec<Vec<char>> {
@@ -24,7 +36,7 @@ fn matrix(input: Vec<String>) -> Vec<Vec<char>> {
         .collect()
 }
 
-fn numbers<'a>(matrix: &'a Vec<Vec<char>>) -> Vec<Number<'a>> {
+fn numbers(matrix: &[Vec<char>]) -> Vec<Number> {
     let mut numbers: Vec<Number> = vec![];
     for line in matrix.iter().enumerate() {
         let mut number = Number::new(line.0);
@@ -111,6 +123,30 @@ fn touches_symbol(num: &Number, matrix: &Vec<Vec<char>>) -> bool {
 
 fn is_symbol(c: char) -> bool {
     !c.is_numeric() && c != '.'
+}
+
+fn gear_factor(gear: &(usize, usize), numbers: &[Number]) -> i64 {
+    let bounds: (usize, usize, usize, usize) = (gear.0 - 1, gear.1 + 1, gear.0 + 1, gear.1 - 1);
+    let touching_numbers: Vec<&Number> = numbers
+        .iter()
+        .filter(|n| {
+            n.line >= bounds.0
+                && n.line <= bounds.2
+                && n.chars_indices.first().unwrap().0 <= bounds.1
+                && n.chars_indices.last().unwrap().0 >= bounds.3
+        })
+        .collect();
+
+    if touching_numbers.len() == 2 {
+        return touching_numbers
+            .into_iter()
+            .map(|n| n.into())
+            .collect::<Vec<i64>>()
+            .iter()
+            .product();
+    }
+
+    0
 }
 
 #[test]
