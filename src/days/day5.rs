@@ -12,6 +12,17 @@ pub fn part1(input: Vec<String>) -> i64 {
     seed_locations.first().unwrap().1
 }
 
+pub fn part2(input: Vec<String>) -> i64 {
+    let seeds = extract_seed_from_pairs(&input);
+    let map_groups = extract_map_groups(&input);
+    let mut seed_locations: Vec<(i64, i64)> = vec![];
+    seeds.into_iter().for_each(|seed| {
+        seed_locations.push((seed, browse(seed, map_groups.iter().peekable())));
+    });
+    seed_locations.sort_by(|a, b| a.1.cmp(&b.1));
+    seed_locations.first().unwrap().1
+}
+
 fn browse(source: i64, mut map_groups: Peekable<Iter<'_, Vec<Map>>>) -> i64 {
     let maps = map_groups.next().unwrap();
     let destination = if let Some(map) = maps
@@ -28,10 +39,6 @@ fn browse(source: i64, mut map_groups: Peekable<Iter<'_, Vec<Map>>>) -> i64 {
     }
 
     destination
-}
-
-pub fn part2(input: Vec<String>) -> i64 {
-    0
 }
 
 type Seeds = Vec<i64>;
@@ -66,6 +73,25 @@ fn extracts_all_seeds(input: &[String]) -> Seeds {
         .replace("seeds: ", "")
         .split(' ')
         .map(|s| s.parse().unwrap())
+        .collect()
+}
+
+fn extract_seed_from_pairs(input: &[String]) -> Seeds {
+    let seed_line = input.first().unwrap();
+    let seeds: Seeds = seed_line
+        .replace("seeds: ", "")
+        .split(' ')
+        .map(|s| s.parse().unwrap())
+        .collect();
+    let chunks: Vec<Seeds> = seeds.chunks(2).map(|seeds| seeds.to_vec()).collect();
+    chunks
+        .iter()
+        .map(|seeds| {
+            let start = seeds.first().unwrap();
+            let end = start + seeds.last().unwrap();
+            (*start..end).collect::<Seeds>()
+        })
+        .flatten()
         .collect()
 }
 
