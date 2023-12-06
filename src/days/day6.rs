@@ -22,7 +22,21 @@ pub fn part1(input: Vec<String>) -> i64 {
 }
 
 pub fn part2(input: Vec<String>) -> i64 {
-    0
+    let record = extract_record(&input);
+    let quads = quads(&record);
+    let mut possibilities: i64 = 0;
+    for quad in quads {
+        for i in quad + 1.. {
+            let distance = (record.time as i64 - i) * i;
+            if distance > record.distance as i64 && i < record.time as i64 {
+                possibilities += 1;
+            } else {
+                break;
+            }
+        }
+    }
+
+    possibilities
 }
 
 fn quads(rec: &Record) -> Vec<i64> {
@@ -52,6 +66,16 @@ fn extract_records(input: &[String]) -> Vec<Record> {
         .collect()
 }
 
+fn extract_record(input: &[String]) -> Record {
+    let time_line = input.first().unwrap();
+    let time: f64 = extract_value(time_line);
+
+    let distance_line = input.last().unwrap();
+    let distance: f64 = extract_value(distance_line);
+
+    Record { time, distance }
+}
+
 fn extract_values(line: &str) -> Vec<f64> {
     line.replace("Distance:", "")
         .replace("Time:", "")
@@ -60,6 +84,15 @@ fn extract_values(line: &str) -> Vec<f64> {
         .filter(|s| !s.is_empty())
         .map(|v| v.parse::<f64>().unwrap())
         .collect()
+}
+
+fn extract_value(line: &str) -> f64 {
+    line.replace("Distance:", "")
+        .replace("Time:", "")
+        .trim()
+        .replace(' ', "")
+        .parse::<f64>()
+        .unwrap()
 }
 
 #[derive(Debug)]
@@ -80,8 +113,8 @@ Distance:  9  40  200"#,
 #[test]
 fn part2_example() {
     let res = part2(aoc23::parse_lines(
-        r#"
-"#,
+        r#"Time:      7  15   30
+Distance:  9  40  200"#,
     ));
-    assert_eq!(res, 0)
+    assert_eq!(res, 71503)
 }
