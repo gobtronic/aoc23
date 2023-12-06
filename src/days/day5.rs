@@ -1,6 +1,8 @@
 use std::iter::Peekable;
 use std::slice::Iter;
 
+use rayon::prelude::*;
+
 pub fn part1(input: Vec<String>) -> i64 {
     let seeds = extracts_all_seeds(&input);
     let map_groups = extract_map_groups(&input);
@@ -15,12 +17,13 @@ pub fn part1(input: Vec<String>) -> i64 {
 pub fn part2(input: Vec<String>) -> i64 {
     let seeds = extract_seed_from_pairs(&input);
     let map_groups = extract_map_groups(&input);
-    let mut seed_locations: Vec<(i64, i64)> = vec![];
-    seeds.into_iter().for_each(|seed| {
-        seed_locations.push((seed, browse(seed, map_groups.iter().peekable())));
-    });
-    seed_locations.sort_by(|a, b| a.1.cmp(&b.1));
-    seed_locations.first().unwrap().1
+    *seeds
+        .par_iter()
+        .map(|seed| browse(*seed, map_groups.iter().peekable()))
+        .collect::<Vec<i64>>()
+        .iter()
+        .min()
+        .unwrap()
 }
 
 fn browse(source: i64, mut map_groups: Peekable<Iter<'_, Vec<Map>>>) -> i64 {
@@ -43,7 +46,7 @@ fn browse(source: i64, mut map_groups: Peekable<Iter<'_, Vec<Map>>>) -> i64 {
 
 type Seeds = Vec<i64>;
 
-#[derive(Debug)]
+#[derive(Clone, Debug)]
 struct Map {
     destination: i64,
     source: i64,
@@ -86,12 +89,11 @@ fn extract_seed_from_pairs(input: &[String]) -> Seeds {
     let chunks: Vec<Seeds> = seeds.chunks(2).map(|seeds| seeds.to_vec()).collect();
     chunks
         .iter()
-        .map(|seeds| {
+        .flat_map(|seeds| {
             let start = seeds.first().unwrap();
             let end = start + seeds.last().unwrap();
             (*start..end).collect::<Seeds>()
         })
-        .flatten()
         .collect()
 }
 
