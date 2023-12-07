@@ -32,7 +32,7 @@ pub fn part2(input: Vec<String>) -> i64 {
     0
 }
 
-#[derive(Eq, Hash, Debug, Ord)]
+#[derive(Eq, Debug)]
 struct Hand {
     cards: Vec<char>,
     bid: i64,
@@ -54,24 +54,30 @@ impl PartialEq for Hand {
     }
 }
 
-impl PartialOrd for Hand {
-    fn partial_cmp(&self, other: &Self) -> Option<std::cmp::Ordering> {
+impl Ord for Hand {
+    fn cmp(&self, other: &Self) -> std::cmp::Ordering {
         match self.hand_type().cmp(&other.hand_type()) {
             std::cmp::Ordering::Equal => {
                 for (i, c) in self.cards.iter().enumerate() {
                     let other_c = other.cards.get(i).unwrap();
                     match card_val(other_c).cmp(&card_val(c)) {
-                        std::cmp::Ordering::Less => return Some(std::cmp::Ordering::Greater),
-                        std::cmp::Ordering::Greater => return Some(std::cmp::Ordering::Less),
+                        std::cmp::Ordering::Less => return std::cmp::Ordering::Greater,
+                        std::cmp::Ordering::Greater => return std::cmp::Ordering::Less,
                         std::cmp::Ordering::Equal => {}
                     };
                 }
 
-                None
+                std::cmp::Ordering::Equal
             }
-            std::cmp::Ordering::Less => Some(std::cmp::Ordering::Less),
-            std::cmp::Ordering::Greater => Some(std::cmp::Ordering::Greater),
+            std::cmp::Ordering::Less => std::cmp::Ordering::Less,
+            std::cmp::Ordering::Greater => std::cmp::Ordering::Greater,
         }
+    }
+}
+
+impl PartialOrd for Hand {
+    fn partial_cmp(&self, other: &Self) -> Option<std::cmp::Ordering> {
+        Some(self.cmp(other))
     }
 }
 
@@ -151,5 +157,5 @@ KK677 28
 KTJJT 220
 QQQJA 483"#,
     ));
-    assert_eq!(res, 0)
+    assert_eq!(res, 5905)
 }
