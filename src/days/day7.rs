@@ -23,13 +23,15 @@ pub fn part1(input: Vec<String>) -> i64 {
         })
         .enumerate()
         .fold(0_i64, |mut acc, (i, h)| {
+            println!("{}", h.bid);
             acc += h.bid * ((i as i64) + 1);
             acc
         })
 }
 
 pub fn part2(input: Vec<String>) -> i64 {
-    0
+    std::env::set_var("JOKER", "true");
+    part1(input)
 }
 
 #[derive(Eq, Debug)]
@@ -60,9 +62,9 @@ impl Ord for Hand {
             std::cmp::Ordering::Equal => {
                 for (i, c) in self.cards.iter().enumerate() {
                     let other_c = other.cards.get(i).unwrap();
-                    match card_val(other_c).cmp(&card_val(c)) {
-                        std::cmp::Ordering::Less => return std::cmp::Ordering::Greater,
-                        std::cmp::Ordering::Greater => return std::cmp::Ordering::Less,
+                    match card_val(c).cmp(&card_val(other_c)) {
+                        std::cmp::Ordering::Less => return std::cmp::Ordering::Less,
+                        std::cmp::Ordering::Greater => return std::cmp::Ordering::Greater,
                         std::cmp::Ordering::Equal => {}
                     };
                 }
@@ -95,13 +97,58 @@ impl Hand {
             return HandType::FiveOAK;
         }
         let sec_highest = sorted_occurences.get(1).unwrap();
-        match (*highest.1, *sec_highest.1) {
-            (4, _) => HandType::FourOAK,
-            (3, 2) => HandType::FullHouse,
-            (3, _) => HandType::ThreeOAK,
-            (2, 2) => HandType::TwoP,
-            (1, 1) => HandType::High,
-            _ => HandType::OneP,
+        if std::env::var("JOKER").is_ok() {
+            match (*highest.1, *sec_highest.1) {
+                (4, _) => {
+                    if highest.0 == &'J' || sec_highest.0 == &'J' {
+                        return HandType::FiveOAK;
+                    }
+                    HandType::FourOAK
+                }
+                (3, 2) => {
+                    if highest.0 == &'J' || sec_highest.0 == &'J' {
+                        return HandType::FiveOAK;
+                    }
+                    HandType::FullHouse
+                }
+                (3, 1) => {
+                    if sorted_occurences.iter().any(|c| c.0 == &'J') {
+                        return HandType::FourOAK;
+                    }
+                    HandType::ThreeOAK
+                }
+                (2, 2) => {
+                    if highest.0 == &'J' || sec_highest.0 == &'J' {
+                        return HandType::FourOAK;
+                    } else if sorted_occurences.last().unwrap().0 == &'J' {
+                        return HandType::FullHouse;
+                    }
+
+                    HandType::TwoP
+                }
+                (2, 1) => {
+                    if sorted_occurences.iter().any(|c| c.0 == &'J') {
+                        return HandType::ThreeOAK;
+                    }
+
+                    HandType::OneP
+                }
+                _ => {
+                    if sorted_occurences.iter().any(|c| c.0 == &'J') {
+                        return HandType::OneP;
+                    }
+                    HandType::High
+                }
+            }
+        } else {
+            match (*highest.1, *sec_highest.1) {
+                (4, _) => HandType::FourOAK,
+                (3, 2) => HandType::FullHouse,
+                (3, _) => HandType::ThreeOAK,
+                (2, 2) => HandType::TwoP,
+                (1, 1) => HandType::High,
+                _ => HandType::OneP,
+            }
         }
     }
 }
@@ -117,7 +164,13 @@ fn card_val(char: &char) -> i64 {
         '8' => 8,
         '9' => 9,
         'T' => 10,
-        'J' => 11,
+        'J' => {
+            if std::env::var("JOKER").is_ok() {
+                1
+            } else {
+                11
+            }
+        }
         'Q' => 12,
         'K' => 13,
         'A' => 14,
@@ -151,11 +204,25 @@ QQQJA 483"#,
 #[test]
 fn part2_example() {
     let res = part2(aoc23::parse_lines(
-        r#"32T3K 765
-T55J5 684
-KK677 28
-KTJJT 220
-QQQJA 483"#,
+        r#"2345A 1
+Q2KJJ 13
+Q2Q2Q 19
+T3T3J 17
+T3Q33 11
+2345J 3
+J345A 2
+32T3K 5
+T55J5 29
+KK677 7
+KTJJT 34
+QQQJA 31
+JJJJJ 37
+JAAAA 43
+AAAAJ 59
+AAAAA 61
+2AAAA 23
+2JJJJ 53
+JJJJ2 41"#,
     ));
-    assert_eq!(res, 5905)
+    assert_eq!(res, 6839)
 }
