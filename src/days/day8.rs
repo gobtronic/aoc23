@@ -61,11 +61,11 @@ pub fn part2(input: Vec<String>) -> i64 {
 }
 
 fn lcm_distance(distances: &[Option<i64>]) -> Option<i64> {
-    if distances.into_iter().any(|d| d.is_none()) {
+    if distances.iter().any(|d| d.is_none()) {
         return None;
     }
 
-    let distances: Vec<i64> = distances.into_iter().map(|d| d.unwrap()).collect();
+    let distances: Vec<i64> = distances.iter().map(|d| d.unwrap()).collect();
     let result = distances.windows(2).fold(0, |acc, pair| {
         if acc == 0 {
             lcm(pair[0], pair[1])
@@ -87,9 +87,7 @@ fn gcd(first: u32, second: u32) -> u32 {
     let mut max = first;
     let mut min = second;
     if min > max {
-        let val = max;
-        max = min;
-        min = val;
+        std::mem::swap(&mut max, &mut min)
     }
 
     loop {
